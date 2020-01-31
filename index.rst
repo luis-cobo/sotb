@@ -38,9 +38,3 @@ sobre plataformas existentes.
    taller01.rst
 
 
-Índices y tablas
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
