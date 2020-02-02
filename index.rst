@@ -31,10 +31,13 @@ sobre plataformas existentes.
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contenido:
+   :caption: Introducción:
 
    capitulo01.rst
    capitulo02.rst
    taller01.rst
-
+   capitulo03.rst
+   capitulo04.rst
+   capitulo05.rst
+   taller02.rst
 
