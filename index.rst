@@ -41,3 +41,9 @@ sobre plataformas existentes.
    capitulo05.rst
    taller02.rst
 
+.. toctree::
+   :maxdepth: 2
+   :caption: Procesos:
+
+   capitulo06.rst
+   capitulo07.rst
