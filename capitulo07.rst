@@ -121,7 +121,7 @@ del procesador y como el despachador asigna a cada uno de estos procesos al proc
 .. figure:: fig29.png
    :alt: Planificación por FCFS
 
-   Figura 28 Planificación por FCFS
+   Figura 29 Planificación por FCFS
 
 Podemos ver en el diagrama anterior, que el proceso *A* inicia desde su tiempo de llegada
 a la cola de preparados (*t=0*) y cede la CPU al proceso *B* en el tiempo 3, cuando finaliza.
@@ -141,3 +141,121 @@ E         15        21      3     9
 --------  ------    ----    ----  ----
 Promedio                    2.2   6.4
 ========  ======    ====    ====  ====
+
+Planificación SJF=*Shortest Job First*, el proceso más corto primero
+--------------------------------------------------------------------
+
+Cuando no se tiene la posibilidad de implementar multitarea apropiativa,
+pero se requiere de un algoritmo más justo, contando con información por anticipado
+acerca del tiempo que duran los procesos , puede elegirse el más corto de los presentes,
+o sea, el de menos duración de la cola de preparados.
+
+Lo interesante de esta política de planificación es que minimiza el tiempo de
+espera promedio. Como era de esperarse, SJF favorece a los procesos cortos. Sin embargo,
+un proceso largo puede esperar mucho tiempo antes de ser atendido,  un proceso más 
+largo que el promedio está predispuesto a sufrir *inanición*.
+
+Usando el ejemplo presentado con la política FCFS, vamos a tener la siguiente
+planificación de procesos en un diagrama GANTT:
+
+.. figure:: fig30.png
+   :alt: Planificación por SJF
+
+   Figura 30 Planificación por SJF
+
+En la siguiente tabla podemos ver el cálculo del tiempo de espera (*E*) y del tiempo de
+retorno (*R*) para cada uno de estos procesos si aplicamos el algoritmo de planificación
+SJF.
+
+========  ======    ====    ====  ====
+Proceso   Inicio    Fin     E     R
+========  ======    ====    ====  ====
+A         0         3       0     3
+B         5         10      4     9
+C         3         5       0     2
+D         10        15      1     6
+E         15        21      3     9
+--------  ------    ----    ----  ----
+Promedio                    1.6   5.8
+========  ======    ====    ====  ====   
+
+Además del riesgo de **inanición** de los procesos de larga duración 
+que sufre esta política de planificación, hay que recordar que esta política
+no es implementable en la vida real, aunque se puede *estimar* las duraciones
+de los procesos, según su historia reciente.
+
+Existe una versión expropiativa de este algoritmo, denominada política
+**SRTF** = *Shortest Remaining Time First*. Bajo este esquema, el proceso que
+está en la CPU será desalojado si llega a la cola de preparados un proceso
+con una duración más corta o menor.
+
+Planificación por prioridades
+-----------------------------
+
+Es normal en los sitemas operativos modernos asignarle un nivel de importancia
+o *prioridad* numérica a los procesos. La política basa en prioridades se basa
+en dejar entrar a la CPU a aquel proceso que tiene la mayor prioridad. Esta
+política puede ser expropiativa o no. Hay que tener en cuenta que aunque es el
+sistema operativo el que normalmente define la prioridad del proceso, también
+existe la posibilidad que sea el usuario quien específique esta prioridad. Podemos
+decir que la política SJF es un caso especial de prioridades, donde tomamos como
+prioridad del proceso la duración estimada del proceso.
+
+Igual que con SJF, en esta política de planificación también sufrimos riesgos de
+**inanición** de los procesos con menor prioridad. Una solución que encontramos
+en la literatura consiste en el **envejecimiento (*aging*)** del proceso. Esta
+solución consiste en aumentar la prioridad de los procesos de manera progresiva a 
+medida que esperan mucho en la cola de preparados.
+
+Planificación por Turno Rotatorio (*Round Robin*)
+-------------------------------------------------
+
+El esquema por turnos rotatorios busca dar una relación de respuesta buena,
+tanto para procesos largos como para los cortos. La principal diferencia entre
+los turnos y FCFS es que en este caso sí emplea multitarea apropiativa: cada
+proceso que esté en la lista de procesos listos puede ejecutarse por un sólo
+*quantum (q)*. Si un proceso no ha terminado de ejecutar al final de su
+*quantum*, será interrumpido y puesto al final de la cola de procesos
+preparados, para que espere a su turno nuevamente. Los procesos que sean
+despertados por los planificadores a mediano o largo plazos se agregarán
+también al final de esta cola. 
+
+
+Con la misma tabla de procesos presentada en los casos anteriores y utilizando
+un *quantum=1*, obtendremos el siguiente diagrama de GANTT:
+
+.. figure:: fig31.png
+   :alt: Planificación por SJF
+
+   Figura 31 Planificación por RR, Turnos Rotatorios
+
+En la siguiente tabla podemos ver el cálculo del tiempo de espera (*E*) y del tiempo de
+retorno (*R*) para cada uno de estos procesos si aplicamos el algoritmo de planificación
+RR.
+
+========  ======    ====    ====  ====
+Proceso   Inicio    Fin     E     R
+========  ======    ====    ====  ====
+A         0         6       3     6
+B         1         11      4     10
+C         4         8       3     5
+D         9         18      4     9
+E         12        21      3     9
+--------  ------    ----    ----  ----
+Promedio                    3.4   7.8
+========  ======    ====    ====  ====   
+
+Los turnos puede ser ajustada modificando la duración de *q*. Conforme se
+incrementa *q*, los turnos tienden a convertirse en FCFS. Si *q* es muy grande, 
+los procesos terminan sus tiempo de CPU antes de que termine su tiempo. Pero
+si *q* es muy pequeño, se tiende a un sistema en el que cada proceso dispone de 
+un procesador a 1/N de la velocidad del procesador real (procesador compartido).
+Finalmente si *q* se vuelve muy pequeño, ocurren más cambios de contexto y baja el 
+rendimiento (*q* debería ser mucho mayor que el tiempo que dura un cambio de
+contexto).
+
+Varios autores han propuestos modificaciones al algoritmo *RR*. Una de ellas consiste
+en tener un *quantum (q)* de duración variable, en función de la carga del sistema o
+de la prioridad del proceso que entre a la CPU. Por ejemplo, en el sistema operativo Linux,
+cada proceso que entra a la CPU recibe una *q* proporcional al tiempo que el proceso ha
+estado en espera y al número de procesos en el sistema.
