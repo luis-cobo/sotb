@@ -5,7 +5,7 @@ Python ofrece a través de su biblioteca de funciones ``os`` el acceso a las
 llamadas al sistema que ofrece el sistema operativo. Algunas de las operaciones
 que ofrece Python son las siguientes:
 
-.. code-block:: python
+.. code:: python
     # Programa en Python para demostrar el uso de los comando fork y wait
 
     # Importar el modulo os
