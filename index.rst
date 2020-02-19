@@ -49,7 +49,10 @@ sobre plataformas existentes.
    capitulo07.rst
    capitulo09.rst
    capitulo10.rst
+<<<<<<< HEAD
    capitulo11.rst
+=======
+>>>>>>> 1d02aacd63af7d8565c8e1730c67c15fd3adae7e
 
 .. toctree::
    :maxdepth: 2
