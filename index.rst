@@ -48,6 +48,8 @@ sobre plataformas existentes.
    capitulo06.rst
    capitulo07.rst
    capitulo09.rst
+   capitulo10.rst
+   capitulo11.rst
 
 .. toctree::
    :maxdepth: 2
