@@ -204,3 +204,180 @@ variable.
     thread2.join()
 
     print(g)
+
+Monitores
+^^^^^^^^^
+
+Los monitores son una herramienta orientada por objetos propuesta por Hoare en el año 1972. Es también una
+una herramienta de sincronización. 
+
+Como son objetos, poseen una estructura propia, compuesta de atributos, métodos y estructuras de datos que se
+agrupan en un módulo especial. 
+
+Una vez creado el objeto monitor, los diversos hilos y procesos que están ejecutándose, pueden hacer uso
+de los servicios de este objeto, utilizando los métodos que el objeto proporciona. Lo que hace de este tipo
+de objetos un elemento interesante para la sincronización son sus características, entre las cuales podemos
+mencionar:
+
+* Solo un proceso puede estar activo en el monitor en un mismo instante.
+* Cuando un proceso X utiliza un método del monitor, el objeto monitor verificará que no haya otro proceso
+  ejecutando algún otro método dentro del monitor. Si es así, es decir, si ya había un proceso usando los
+  servicios del monitor, el proceso X será suspendido hasta que el otro proceso abandone el monitor.
+* Los atributos del monitor solo pueden ser accedidos dentro del mismo monitor, y ningún proceso tiene
+  acceso directo a ellos.
+
+Con tales características, el programador no tiene que preocuparse de todo el engorroso trabajo que trae consigo
+las tareas de sincronización. Sencillamente se coloca dentro del monitor todos aquellos recursos compartidos
+que se quieren proteger, y el monitor se asegura que solo un proceso tiene acceso al recurso a la vez. 
+
+El monitor puede verse como una valla alrededor del recurso (o recursos), de forma tal que los procesos que
+quieran ingresar dentro de la valla, deben hacerlo siguiendo las estrictas reglas que exige el monitor.
+
+La ventaja que ofrecen los monitores sobre los semáforos tiene que ver con que la exclusión mutua para
+tener acceso a los recursos está implícita en la estructura de funcionamiento de los monitores. 
+
+.. figure:: fig34.png
+   :alt: Estructura de un monitor
+
+   Figura 34 Estructura de un monitor
+
+Problemas Clásicos de Sincronización
+------------------------------------
+
+A lo largo de la historia se han diseñado varios problemas para ilustrar lo difícil que resulta la tarea
+de sincronizar procesos. Muchos de estos problemas han inspirado a los desarrolladores a proponer soluciones
+creativas e interesantes que han hecho avanzar la programación de sistemas concurrentes y paralelos. Los
+problemas clásicos de sincronización que vamos a presentar son:
+
+* Problema del Productor-Consumidor
+* Problema de los Lectores-Escritores
+* Problema de la Cena de los Filósofos
+
+Problema del Productor-Consumidor
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**Planteamiento**
+
+Supóngase que tenemos una *Línea de Ensamblado*, donde hay procesos que producen datos y otros procesos
+que consumen esos datos. Los procesos productores guardan los datos generados en un *buffer* compartido
+por todos. Sin embargo hay que tener en cuenta lo siguiente:
+
+* Agregar o retirar un dato del *buffer* se hace de forma atómica. Es decir, no son interrumpidos en la mitad
+  de la labor.
+* Si un consumidor desea alguna información almacenada en el *buffer*, pero éste está vacío, se bloquea
+  esperando que algún productor deje algun dato en el buffer.
+
+Este problema puede parecerse a varios existentes en la vida real, como son las colas de trabajo de impresión
+o lo mecanismos de comunicación entre procesos que usan *sockets*  para enviar y recibir datos.
+
+**Implementación**
+
+Cada Productor y Consumidor es un hilo que tiene acceso a una estructura de datos compartida. Estos datos
+compartidos incluyen una lista de objetos que servirá como *buffer*, más dos semáforos que permitirán
+proteger el buffer cuando los procesos quieran tener acceso a él.
+
+.. code-block:: python
+
+    buffer = []    # El buffer que guardará los datos
+    mutex = Semaphore(1)  # Solo un proceso trabajando con el buffer
+    sincro = Semaphore(0) 
+
+Como vemos tenemos dos semáforos para trabajar en esta solución. Un semáforo de exclusión mutua para proteger
+el buffer compartido (``mutex``), y un semáforo para sincronizar al productor y al consumidor. De esta manera
+el prodcutor le comunica al consumidor que hay datos a consumir (``sincro``).
+
+El hilo del proceso Productor puede ser como se muestra a continuación:
+
+.. code-block:: python
+    
+     def productor():
+         while True:
+             dato = producir()
+
+             mutex.acquire()
+             buffer.append(dato)
+             mutex.release()
+
+             sincro.release()
+
+Y el proceso Consumidor tendría la siguiente estructura:
+
+.. code-block:: python
+    
+     def consumidor():
+         while True:
+             sincro.acquire()
+
+             mutex.acquire()
+             dato = buffer.pop(0)   # obtenemos el primer elem y lo eliminamos
+             mutex.release()
+
+             consumir(dato)
+
+Como vemos, tanto para guardar como para sacar un elemento del buffer, lo hacemos de manera
+exclusiva, de forma tal que no haya otro proceso teniendo acceso al buffer. Gracias al
+semáforo podemos tener esa exclusión mutua. También podemos ver el esquema clásico de
+comunicación usando semáforos. El consumidor hace ``acquire``, lo que lleva a bloquearse
+hasta que algún productor haga ``release``, y esto hace que si había alguien esperando
+un dato, lo pueda hacer sin problemas.
+
+La Cena de los Filósofos
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+Este problema clásico tiene el siguiente condicionamiento:
+
+* Hay cinco filósofos sentados a la mesa
+* Frente a cada filósofo hay un plato de arroz.
+* Además hay 5 palillos situados entre los filósofos. 
+* Se necesitan ambos palillos para que el filósofo pueda comer el arroz del plato.
+
+La siguiente gráfica ilustra mejor el concepto:
+
+.. figure:: fig35.png
+   :alt: Problema de los 5 filósofos
+
+   Figura 35 Problema de la Cena de los Filósofos
+
+**Planteamiento**
+
+Para hacer más compleja la tarea del filósofo, estos se limitan a realizar solo dos tareas en su vida: pensar y comer.
+Los filósofos piensan, hasta que les da hambre. Cuando esto ocurre, el filósofo levanta el palillo que tiene a la 
+a la izquierda, luego el palillo que tiene a la derecha y cuando ya tiene los dos palillos, procede a comer.
+
+Cuando ya está satisfecho y no quiere comer más, pone en la mesa un palillo, luego el otro y se concentra en sus
+pensamientos a pensar. ¿Qué problemas se pueden presentar?
+
+**Bloque mutuo**
+
+Cuando todos los los filósofos intentan levantar uno de los palillos al mismo tiempo se produce lo que llamamos
+**bloqueo mutuo**.
+
+.. figure:: fig36.png
+   :alt: Ilustración del Bloqueo Mutuo
+
+   Figura 36 El Bloqueo Mutuo de los Filósofos
+
+**Inanición**
+
+Cuando los filósofos se ponen de acuerdo para que otro se muera de hambre. Por ejemplo, en la siguiente figura
+podemos ver que una rápida sucesión de los procesos C y E lleva a la *inanición* a D.
+
+.. figure:: fig37.png
+   :alt: Ejemplo de una inanición
+
+   Figura 37 Inanición de procesos
+
+**Soluciones**
+
+Este problema no ha sido posible de solucionar de forma general, sin embargo, se han planteado soluciones a
+situaciones específicas dentro del problema.
+
+Por ejemplo, proteger cada acción con los palillos con semáforos. De esa manera se tiene exclusión mutua sobre
+este recurso compartido. El problema que puede llevar este enfoque tiene que ver con los interbloqueos que se
+pueden producir al tener acceso a los palillos. 
+
+Otras posibles soluciones incluyen:
+
+* Algoritmos asimétricos para los filósofos pares/impares, o que haya filósofos zurdos
+* Impedir que cuatro o más filósofos recojan palillos al tiempo.
+* Tomar dos palillos de manera *atómica* (o se toman ambos palillos o no se toma ninguno).
